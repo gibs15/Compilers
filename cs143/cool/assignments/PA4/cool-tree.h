@@ -17,6 +17,9 @@
 #define BOOL_TYPE 	1
 #define STRING_TYPE 	2
 
+#define METHOD_TYPE	3
+#define ATTR_TYPE	4
+
 
 
 // define the class for phylum
@@ -66,6 +69,7 @@ public:
 
    //Metodos agregados
    virtual Symbol getName() = 0;
+   virtual int getFeatureType() = 0;
    virtual void semant() = 0;
 
 #ifdef Feature_EXTRAS
@@ -198,9 +202,20 @@ public:
       return filename;
    }
    void semant(){
+      bool hasMain = false;
       cout << getName() << endl;
-      for(int i = features->first(); features->more(i); i = features->next(i))
-         features->nth(i)->semant();
+      for(int i = features->first(); features->more(i); i = features->next(i)){
+        Feature feature = features->nth(i);
+      	if(getName()->equal_string("Main",4) == 0 && feature->getFeatureType() == METHOD_TYPE && feature->getName()->equal_string("main",4)){
+           hasMain = true;
+      	}
+        features->nth(i)->semant();
+      }
+
+      if(!hasMain){
+	  //Error 9 no hay metodo Main
+      }
+         
    }
 
 
@@ -220,12 +235,14 @@ protected:
    Formals formals;
    Symbol return_type;
    Expression expr;
+   int featureType;
 public:
    method_class(Symbol a1, Formals a2, Symbol a3, Expression a4) {
       name = a1;
       formals = a2;
       return_type = a3;
       expr = a4;
+      featureType = METHOD_TYPE;
    }
    Feature copy_Feature();
    void dump(ostream& stream, int n);
@@ -233,6 +250,10 @@ public:
    //Metodos agregados
    Symbol getName(){
       return name;
+   }
+
+   int getFeatureType(){
+     return featureType;
    }
    
    void semant(){
@@ -254,11 +275,13 @@ protected:
    Symbol name;
    Symbol type_decl;
    Expression init;
+   int featureType;
 public:
    attr_class(Symbol a1, Symbol a2, Expression a3) {
       name = a1;
       type_decl = a2;
       init = a3;
+      featureType = ATTR_TYPE;
    }
    Feature copy_Feature();
    void dump(ostream& stream, int n);
@@ -266,6 +289,10 @@ public:
    //Metodos agregados
    Symbol getName(){
       return name;
+   }
+
+   int getFeatureType(){
+     return featureType;
    }
 
    void semant(){

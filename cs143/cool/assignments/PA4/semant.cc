@@ -248,18 +248,18 @@ void program_class::semant()
     /* some semantic analysis code may go here */
 
 
-    bool isMain = false;
+    bool hasMain = false;
 
     for(int i = classes->first(); classes->more(i); i = classes->next(i)){
         Class_ class_ = classes->nth(i);
         class_->semant();
 	if(class_->getName()->equal_string("Main",4) == 0){
-           isMain = true; 
+           hasMain = true; 
         }
     } 
  
-    if(!isMain){
-	//Error 9 no hay Main
+    if(!hasMain){
+	//Error 9 no hay clase Main
     }
 
 
