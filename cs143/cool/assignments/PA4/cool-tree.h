@@ -346,10 +346,6 @@ public:
    Case copy_Case();
    void dump(ostream& stream, int n);
 
-   //Metodos agregados
-   int semant(){
-      return -10;
-   }
 
 #ifdef Case_SHARED_EXTRAS
    Case_SHARED_EXTRAS
@@ -468,8 +464,8 @@ public:
    int semant(){
 
       int predType = pred->semant();
-      int then_expType = then_expType->semant();
-      int else_expType = else_expType->semant();
+      int then_expType = then_exp->semant();
+      int else_expType = else_exp->semant();
 
       if(predType != ERROR_TYPE && then_expType != ERROR_TYPE && else_expType != ERROR_TYPE){
          type == ERROR_TYPE;
@@ -482,7 +478,7 @@ public:
 
       }
 
-      return OK_TYPE;
+      return type;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -526,7 +522,7 @@ public:
 
       }
 
-      return OK_TYPE;
+      return type;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -630,6 +626,7 @@ class plus_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
+   int type;
 public:
    plus_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -665,6 +662,7 @@ class sub_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
+   int type;
 public:
    sub_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -700,6 +698,7 @@ class mul_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
+   int type;
 public:
    mul_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -735,6 +734,7 @@ class divide_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
+   int type;
 public:
    divide_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -769,6 +769,7 @@ public:
 class neg_class : public Expression_class {
 protected:
    Expression e1;
+   int type;
 public:
    neg_class(Expression a1) {
       e1 = a1;
@@ -796,6 +797,7 @@ class lt_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
+   int type;
 public:
    lt_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -831,6 +833,7 @@ class eq_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
+   int type;
 public:
    eq_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -901,6 +904,7 @@ public:
 class comp_class : public Expression_class {
 protected:
    Expression e1;
+   int type;
 public:
    comp_class(Expression a1) {
       e1 = a1;
@@ -910,7 +914,8 @@ public:
 
    //metodos agregados
    int semant(){
-      return BOOL_TYPE;
+      type = BOOL_TYPE;
+      return type;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -980,6 +985,7 @@ public:
 class string_const_class : public Expression_class {
 protected:
    Symbol token;
+   int type;
 public:
    string_const_class(Symbol a1) {
       token = a1;
@@ -989,7 +995,8 @@ public:
 
    //metodos agregados
    int semant(){
-      return STRING_TYPE;
+      type = STRING_TYPE;
+      return type;
    }
 
 #ifdef Expression_SHARED_EXTRAS
