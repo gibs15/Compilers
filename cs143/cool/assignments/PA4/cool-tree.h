@@ -13,12 +13,13 @@
 #include "cool-tree.handcode.h"
 
 #define ERROR_TYPE	-1
-#define INT_TYPE 	0
-#define BOOL_TYPE 	1
-#define STRING_TYPE 	2
+#define OK_TYPE		0
+#define INT_TYPE 	1
+#define BOOL_TYPE 	2
+#define STRING_TYPE 	3
 
-#define METHOD_TYPE	3
-#define ATTR_TYPE	4
+#define METHOD_TYPE	4
+#define ATTR_TYPE	5
 
 
 
@@ -345,6 +346,11 @@ public:
    Case copy_Case();
    void dump(ostream& stream, int n);
 
+   //Metodos agregados
+   int semant(){
+      return -10;
+   }
+
 #ifdef Case_SHARED_EXTRAS
    Case_SHARED_EXTRAS
 #endif
@@ -367,10 +373,9 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
-//metodos agregados
+   //Metodos agregados
    int semant(){
-      // agregar comparacion
-      return 0;
+      return -10;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -399,6 +404,11 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   //Metodos agregados
+   int semant(){
+      return -10;
+   }
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -423,6 +433,11 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   //Metodos agregados
+   int semant(){
+      return -10;
+   }
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -438,6 +453,7 @@ protected:
    Expression pred;
    Expression then_exp;
    Expression else_exp;
+   int type;
 public:
    cond_class(Expression a1, Expression a2, Expression a3) {
       pred = a1;
@@ -450,11 +466,23 @@ public:
    //Metodos agregados
 
    int semant(){
-      if(pred->semant() != BOOL_TYPE){
-         cout << "Error, condicion del if no booleana" << endl;
+
+      int predType = pred->semant();
+      int then_expType = then_expType->semant();
+      int else_expType = else_expType->semant();
+
+      if(predType != ERROR_TYPE && then_expType != ERROR_TYPE && else_expType != ERROR_TYPE){
+         type == ERROR_TYPE;
+      }else{
+         type = OK_TYPE;
+         if(predType != BOOL_TYPE){
+            cout << "Error, condicion del if no booleana" << endl;
+            type = ERROR_TYPE;
+         }
+
       }
 
-      
+      return OK_TYPE;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -471,6 +499,7 @@ class loop_class : public Expression_class {
 protected:
    Expression pred;
    Expression body;
+   int type;
 public:
    loop_class(Expression a1, Expression a2) {
       pred = a1;
@@ -478,6 +507,27 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+  //Metodos agregados
+
+   int semant(){
+
+      int predType = pred->semant();
+      int bodyType = body->semant();
+
+      if(predType != ERROR_TYPE && bodyType != ERROR_TYPE){
+         type == ERROR_TYPE;
+      }else{
+         type = OK_TYPE;
+         if(predType != BOOL_TYPE){
+            cout << "Error, condicion del loop no booleana" << endl;
+            type = ERROR_TYPE;
+         }
+
+      }
+
+      return OK_TYPE;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -501,6 +551,10 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   int semant(){
+      return -10;
+   }
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -514,12 +568,23 @@ public:
 class block_class : public Expression_class {
 protected:
    Expressions body;
+   int type;
 public:
    block_class(Expressions a1) {
       body = a1;
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   int semant(){
+      type = OK_TYPE;
+      for(int i = body->first(); body->more(i); i = body->next(i)){
+        Expression expression = body->nth(i);
+        if(expression->semant() == ERROR_TYPE)
+           type = ERROR_TYPE;
+      }
+      return type;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -547,6 +612,10 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   int semant(){
+      return -10;
+   }
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -568,6 +637,19 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   //metodos agregados
+   int semant(){
+      if(e1->semant() != ERROR_TYPE || e2->semant() != ERROR_TYPE){
+         int t = INT_TYPE;
+         if(e1->semant() != INT_TYPE || e2->semant() != INT_TYPE){
+            type = ERROR_TYPE;
+         }
+      }else{
+         type = ERROR_TYPE;
+      }
+      return type;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -591,6 +673,19 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   //metodos agregados
+   int semant(){
+      if(e1->semant() != ERROR_TYPE || e2->semant() != ERROR_TYPE){
+         int t = INT_TYPE;
+         if(e1->semant() != INT_TYPE || e2->semant() != INT_TYPE){
+            type = ERROR_TYPE;
+         }
+      }else{
+         type = ERROR_TYPE;
+      }
+      return type;
+   }
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -612,6 +707,19 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   //metodos agregados
+   int semant(){
+      if(e1->semant() != ERROR_TYPE || e2->semant() != ERROR_TYPE){
+         int t = INT_TYPE;
+         if(e1->semant() != INT_TYPE || e2->semant() != INT_TYPE){
+            type = ERROR_TYPE;
+         }
+      }else{
+         type = ERROR_TYPE;
+      }
+      return type;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -635,6 +743,19 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   //metodos agregados
+   int semant(){
+      if(e1->semant() != ERROR_TYPE || e2->semant() != ERROR_TYPE){
+         int t = INT_TYPE;
+         if(e1->semant() != INT_TYPE || e2->semant() != INT_TYPE){
+            type = ERROR_TYPE;
+         }
+      }else{
+         type = ERROR_TYPE;
+      }
+      return type;
+   }
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -654,6 +775,12 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   //metodos agregados
+   int semant(){
+      type = INT_TYPE;
+      return type;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -677,6 +804,19 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   //metodos agregados
+   int semant(){
+      if(e1->semant() != ERROR_TYPE || e2->semant() != ERROR_TYPE){
+         int t = BOOL_TYPE;
+         if(e1->semant() != INT_TYPE || e2->semant() != INT_TYPE){
+            type = ERROR_TYPE;
+         }
+      }else{
+         type = ERROR_TYPE;
+      }
+      return type;
+   }
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -698,6 +838,19 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   //metodos agregados
+   int semant(){
+      if(e1->semant() == ERROR_TYPE || e2->semant() != ERROR_TYPE){
+         int t = e1->semant();
+         if(t != e2->semant()){
+            type = ERROR_TYPE;
+         }
+      }else{
+         type = ERROR_TYPE;
+      }
+      return type;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -724,8 +877,12 @@ public:
 
    //metodos agregados
    int semant(){
-      int t = BOOL_TYPE;
-      if(e1->semant() != INT_TYPE || e1->semant() != e2->semant()){
+      if(e1->semant() != ERROR_TYPE || e2->semant() != ERROR_TYPE){
+         int t = BOOL_TYPE;
+         if(e1->semant() != INT_TYPE || e2->semant() != INT_TYPE){
+            type = ERROR_TYPE;
+         }
+      }else{
          type = ERROR_TYPE;
       }
       return type;
