@@ -447,6 +447,14 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   //Metodos agregados
+
+   int semant(){
+      if(pred.semant() != BOOL_TYPE){
+         cout << "Error, condicion del if no booleana" << endl;
+      }
+   }
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
