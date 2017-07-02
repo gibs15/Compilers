@@ -206,14 +206,14 @@ public:
       cout << getName() << endl;
       for(int i = features->first(); features->more(i); i = features->next(i)){
         Feature feature = features->nth(i);
-      	if(getName()->equal_string("Main",4) == 0 && feature->getFeatureType() == METHOD_TYPE && feature->getName()->equal_string("main",4)){
+      	if(name->equal_string("Main",4) != 0 && feature->getFeatureType() == METHOD_TYPE && feature->getName()->equal_string("main",4) != 0){
            hasMain = true;
       	}
         features->nth(i)->semant();
       }
 
-      if(!hasMain){
-	  //Error 9 no hay metodo Main
+      if(!hasMain && getName()->equal_string("Main",4) != 0){
+	  cout << "No hay metodo Main" << endl;
       }
          
    }
