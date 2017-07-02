@@ -713,6 +713,7 @@ class leq_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
+   int type;
 public:
    leq_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -720,6 +721,15 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   //metodos agregados
+   int semant(){
+      int t = BOOL_TYPE;
+      if(e1->semant() != INT_TYPE || e1->semant() != e2->semant()){
+         type = ERROR_TYPE;
+      }
+      return type;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -740,6 +750,11 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   //metodos agregados
+   int semant(){
+      return BOOL_TYPE;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -815,6 +830,11 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   //metodos agregados
+   int semant(){
+      return STRING_TYPE;
+   }
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -834,6 +854,11 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   //metodos agregados
+   int semant(){
+      return -10;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -855,6 +880,11 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   //metodos agregados
+   int semant(){
+      return -10;
+   }
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -872,6 +902,11 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   //metodos agregados
+   int semant(){
+      return -10;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -892,6 +927,11 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   //metodos agregados
+   int semant(){
+      return -10;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
