@@ -248,12 +248,19 @@ void program_class::semant()
     /* some semantic analysis code may go here */
 
 
+    bool isMain = false;
+
     for(int i = classes->first(); classes->more(i); i = classes->next(i)){
         Class_ class_ = classes->nth(i);
         class_->semant();
+	if(strcmp(class_->getName(),"Main") == 0){
+           isMain = true;
+	}
     } 
  
-
+    if(!isMain){
+	//Error 9 no hay Main
+    }
 
 
 

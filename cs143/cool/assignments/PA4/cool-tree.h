@@ -340,6 +340,12 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+//metodos agregados
+   int semant(){
+      // agregar comparacion
+      return 0;
+   }
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -718,6 +724,11 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+//metodos agregados
+   int semant(){
+      return INT_TYPE;
+   }
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -737,6 +748,11 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   //metodos agregados
+   int semant(){
+      return BOOL_TYPE;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
