@@ -268,7 +268,7 @@ public:
       return name;
    }
 
-   int semant(){
+   void semant(){
       cout << "Attribute:" << getName() << endl;
    }
 
@@ -717,6 +717,7 @@ public:
 class int_const_class : public Expression_class {
 protected:
    Symbol token;
+   int type;
 public:
    int_const_class(Symbol a1) {
       token = a1;
@@ -726,7 +727,8 @@ public:
 
 //metodos agregados
    int semant(){
-      return INT_TYPE;
+      type = INT_TYPE;
+      return type;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -742,6 +744,7 @@ public:
 class bool_const_class : public Expression_class {
 protected:
    Boolean val;
+   int type;
 public:
    bool_const_class(Boolean a1) {
       val = a1;
@@ -751,7 +754,8 @@ public:
 
    //metodos agregados
    int semant(){
-      return BOOL_TYPE;
+      type = BOOL_TYPE;
+      return type;
    }
 
 #ifdef Expression_SHARED_EXTRAS
