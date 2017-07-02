@@ -346,6 +346,12 @@ public:
 
    void dump(ostream& stream, int n);
 
+//metodos agregados
+   int semant(){
+      // agregar comparacion
+      return 0;
+   }
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -824,6 +830,7 @@ public:
 class int_const_class : public Expression_class {
 protected:
    Symbol token;
+   int type;
 public:
    int_const_class(Symbol a1) {
       token = a1;
@@ -833,6 +840,12 @@ public:
 
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+//metodos agregados
+   int semant(){
+      type = INT_TYPE;
+      return type;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -847,6 +860,7 @@ public:
 class bool_const_class : public Expression_class {
 protected:
    Boolean val;
+   int type;
 public:
    bool_const_class(Boolean a1) {
       val = a1;
@@ -856,6 +870,12 @@ public:
 
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   //metodos agregados
+   int semant(){
+      type = BOOL_TYPE;
+      return type;
+   }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
