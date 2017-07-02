@@ -99,7 +99,7 @@ class Expression_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Expression(); }
    virtual Expression copy_Expression() = 0;
-   //virtual int semant();
+   virtual int semant() = 0;
 
 #ifdef Expression_EXTRAS
    Expression_EXTRAS
@@ -450,9 +450,11 @@ public:
    //Metodos agregados
 
    int semant(){
-      if(pred.semant() != BOOL_TYPE){
+      if(pred->semant() != BOOL_TYPE){
          cout << "Error, condicion del if no booleana" << endl;
       }
+
+      
    }
 
 #ifdef Expression_SHARED_EXTRAS
