@@ -69,12 +69,8 @@ public:
 
    //Metodos agregados
    virtual Symbol getName() = 0;
-<<<<<<< HEAD
    virtual int getFeatureType() = 0;
    virtual void semant() = 0;
-=======
-   virtual void semant()=0;
->>>>>>> 4fc46927cf68a01cf653cc4b8dae42eb872eb043
 
 #ifdef Feature_EXTRAS
    Feature_EXTRAS
@@ -103,7 +99,7 @@ class Expression_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Expression(); }
    virtual Expression copy_Expression() = 0;
-   virtual int semant()=0;
+   //virtual int semant();
 
 #ifdef Expression_EXTRAS
    Expression_EXTRAS
@@ -262,7 +258,6 @@ public:
    
    void semant(){
       cout << "Method:" << getName() << endl;
-expr->semant();
    }
 
 #ifdef Feature_SHARED_EXTRAS
@@ -302,8 +297,6 @@ public:
 
    void semant(){
       cout << "Attribute:" << getName() << endl;
-
-      init->semant();
    }
 
 #ifdef Feature_SHARED_EXTRAS
@@ -372,9 +365,6 @@ public:
       expr = a2;
    }
    Expression copy_Expression();
-   int semant(){cout<<"here right"<<endl;return 1;};
-
-
    void dump(ostream& stream, int n);
 
 //metodos agregados
@@ -408,9 +398,6 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-   int semant(){return 0;};
-
-
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -433,9 +420,6 @@ public:
       name = a2;
       actual = a3;
    }
-   int semant(){return 0;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -460,9 +444,6 @@ public:
       then_exp = a2;
       else_exp = a3;
    }
-   int semant(){return 0;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -485,9 +466,6 @@ public:
       pred = a1;
       body = a2;
    }
-   int semant(){return 0;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -510,9 +488,6 @@ public:
       expr = a1;
       cases = a2;
    }
-   int semant(){return 0;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -533,9 +508,6 @@ public:
    block_class(Expressions a1) {
       body = a1;
    }
-   int semant(){return 0;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -562,9 +534,6 @@ public:
       init = a3;
       body = a4;
    }
-   int semant(){return 0;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -586,19 +555,6 @@ public:
    plus_class(Expression a1, Expression a2) {
       e1 = a1;
       e2 = a2;
-   }
-int semant(){
-        cout<<"here right"<<endl;
-        int type=INT_TYPE;
-	    if(e1->semant()!=e2->semant()){
-		
-		//error de semantica
-		//sumar a errors(usando paso por parametros en semant?)	
-		       type=ERROR_TYPE;  	
-	    }
-                  printf("here right");
-		 return type;
-		//Retornar valor tipo int_type
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
@@ -622,17 +578,6 @@ public:
       e1 = a1;
       e2 = a2;
    }
-int semant(){
-        int type=INT_TYPE;
-	    if(e1->semant()!=e2->semant()){
-		
-		//error de semantica
-		//sumar a errors(usando paso por parametros en semant?)	
-		       type=ERROR_TYPE;  	
-	    }
-		 return type;
-		//Retornar valor tipo int_type
-   }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -654,18 +599,6 @@ public:
    mul_class(Expression a1, Expression a2) {
       e1 = a1;
       e2 = a2;
-   }
-int semant(){
-        int type=INT_TYPE;
-	    if(e1->semant()!=e2->semant()){
-		
-		//error de semantica
-		//sumar a errors(usando paso por parametros en semant?)	
-		       type=ERROR_TYPE;  	
-	    }
-            
-		 return type;
-		//Retornar valor tipo int_type
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
@@ -689,17 +622,6 @@ public:
       e1 = a1;
       e2 = a2;
    }
-int semant(){
-        int type=INT_TYPE;
-	    if(e1->semant()!=e2->semant()){
-		
-		//error de semantica
-		//sumar a errors(usando paso por parametros en semant?)	
-		       type=ERROR_TYPE;  	
-	    }
-		 return type;
-		//Retornar valor tipo int_type
-   }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -720,9 +642,6 @@ public:
    neg_class(Expression a1) {
       e1 = a1;
    }
-   int semant(){return 0;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -744,17 +663,6 @@ public:
    lt_class(Expression a1, Expression a2) {
       e1 = a1;
       e2 = a2;
-   }
-int semant(){
-        int type=BOOL_TYPE;
-	    if(e1->semant()!=e2->semant()){
-		
-		//error de semantica
-		//sumar a errors(usando paso por parametros en semant?)	
-		       type=ERROR_TYPE;  	
-	    }
-		 return type;
-		//Retornar valor tipo int_type
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
@@ -778,17 +686,6 @@ public:
       e1 = a1;
       e2 = a2;
    }
-int semant(){
-        int type=BOOL_TYPE;
-	    if(e1->semant()!=e2->semant()){
-		
-		//error de semantica
-		//sumar a errors(usando paso por parametros en semant?)	
-		       type=ERROR_TYPE;  	
-	    }
-		 return type;
-		//Retornar valor tipo int_type
-   }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -811,17 +708,6 @@ public:
       e1 = a1;
       e2 = a2;
    }
-int semant(){
-        int type=BOOL_TYPE;
-	    if(e1->semant()!=e2->semant()){
-		
-		//error de semantica
-		//sumar a errors(usando paso por parametros en semant?)	
-		       type=ERROR_TYPE;  	
-	    }
-		 return type;
-		//Retornar valor tipo int_type
-   }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -842,9 +728,6 @@ public:
    comp_class(Expression a1) {
       e1 = a1;
    }
-   int semant(){return 0;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -866,9 +749,6 @@ public:
    int_const_class(Symbol a1) {
       token = a1;
    }
-   int semant(){return INT_TYPE;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -896,9 +776,6 @@ public:
    bool_const_class(Boolean a1) {
       val = a1;
    }
-   int semant(){return BOOL_TYPE;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -925,9 +802,6 @@ public:
    string_const_class(Symbol a1) {
       token = a1;
    }
-   int semant(){return STRING_TYPE;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -948,9 +822,6 @@ public:
    new__class(Symbol a1) {
       type_name = a1;
    }
-   int semant(){return 0;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -971,9 +842,6 @@ public:
    isvoid_class(Expression a1) {
       e1 = a1;
    }
-   int semant(){return 0;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -992,9 +860,6 @@ protected:
 public:
    no_expr_class() {
    }
-   int semant(){return 0;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
@@ -1015,9 +880,6 @@ public:
    object_class(Symbol a1) {
       name = a1;
    }
-   int semant(){return 0;};
-
-
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
