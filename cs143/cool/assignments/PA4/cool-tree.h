@@ -908,7 +908,7 @@ public:
 class no_expr_class : public Expression_class {
 protected:
 
-   Symbol temp;
+   Symbol type;
 public:
    no_expr_class() {
    }
@@ -916,9 +916,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   Symbol semant(SymbolTable<Symbol,Symbol>* symtab){
-      return temp;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -933,6 +931,7 @@ public:
 class object_class : public Expression_class {
 protected:
    Symbol name;
+   Symbol type;
 public:
    object_class(Symbol a1) {
       name = a1;
@@ -941,9 +940,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   Symbol semant(SymbolTable<Symbol,Symbol>* symtab){
-      return name;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS

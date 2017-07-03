@@ -305,7 +305,9 @@ ostream& ClassTable::semant_error()
    Symbol attr_class::semant(SymbolTable<Symbol,Symbol>* symtab){
       if(symtab->probe(getName()) == NULL){
          symtab->addid(name,&type_decl);
-         if(init->semant(symtab) != type_decl){
+         cout << "Attr:" << name << ":type_decl es " << type_decl << endl;
+         cout << "Attr:" << name << ":init es " << init->semant(symtab) << endl;
+         if(strcmp(init->semant(symtab)->get_string(),type_decl->get_string()) != 0){
             cout << "Se asigno un tipo incompatible a la variable " << name <<  endl;
          }else{
             cout << "TIPOS COMPATIBLES!!!" << endl;
@@ -512,7 +514,16 @@ ostream& ClassTable::semant_error()
       return type;
    }
 
+
+   Symbol no_expr_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      type = No_type;
+      return type;
+   }
  
+   Symbol object_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      type = Object;
+      return type;
+   }
 
 
 /*   This is the entry point to the semantic checker.
