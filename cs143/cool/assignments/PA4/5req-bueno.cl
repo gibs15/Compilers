@@ -1,20 +1,20 @@
-
 class C {
-	a : Int;
-	b : Int;
-	init(x : Int, y : Int) : C {
+        a : Int;
+	b : Bool;
+	init(x : Int,y : Bool) : Bool {
            {
-		if y = x
-        then a <- x
-        else b <- y
-        fi;
+		if y
+        	then b <- false
+        	else b <- y 
+        	fi;
+                true;
            }
 	};
 };
 
 Class Main {
 	main():C {
-	  (new C).init(1,1)
+	  (new C).init(1,true)
 	};
 };
 

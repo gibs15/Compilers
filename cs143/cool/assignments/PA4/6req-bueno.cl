@@ -1,15 +1,14 @@
 class C {
-	a : Int;
+        a : Int;
 	b : Bool;
-	init(x : Int, y : Bool) : C {
-        {
-		   if(y=true)
-		   then     a <- x
-		   else     b <- y
-		   fi;
-		   self;
-		   
-        }
+	init(x : Int,y : Bool) : Bool {
+           {
+		if y
+        	then a <- 3
+        	else b <- y 
+        	fi;
+                true;
+           }
 	};
 };
 

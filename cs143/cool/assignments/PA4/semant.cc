@@ -249,10 +249,12 @@ ostream& ClassTable::semant_error()
 
    void class__class::semant(SymbolTable<Symbol,Symbol>* symtab){
       symtab->enterscope();
+
       bool hasMain = false;
-      cout << getName() << endl;
+      //cout << getName() << endl;
       for(int i = features->first(); features->more(i); i = features->next(i)){
         Feature feature = features->nth(i);
+        cout << feature->getName() << endl;
       	if(name->equal_string("Main",4) != 0 && feature->getFeatureType() == METHOD_TYPE && feature->getName()->equal_string("main",4) != 0){
            hasMain = true;
       	}
@@ -280,11 +282,20 @@ ostream& ClassTable::semant_error()
    int method_class::getFeatureType(){
      return featureType;
    }
+
    //EDITAR
    Symbol method_class::semant(SymbolTable<Symbol,Symbol>* symtab){
       symtab->enterscope();
-      expr->semant(symtab);
+
+      for(int i = formals->first(); formals->more(i); i = formals->next(i)){
+         Formal formal = formals->nth(i);
+         formal->semant(symtab);
+         //cout << "FORMAL:    " << formal->getName() << "TYPE:    " << formal->getType() << endl;
+      }
+      return_type = expr->semant(symtab);
+      cout << name << " returns " << return_type << endl;
       symtab->exitscope();
+
       return return_type;
    }
 
@@ -307,12 +318,32 @@ ostream& ClassTable::semant_error()
          symtab->addid(name,&type_decl);
          //cout << "Attr:" << name << ":type_decl es " << type_decl << endl;
          //cout << "Attr:" << name << ":init es " << init->semant(symtab) << endl;
-         if(strcmp(init->semant(symtab)->get_string(),No_type->get_string()) != 0 && strcmp(init->semant(symtab)->get_string(),type_decl->get_string()) != 0){
-            cout << "Se asigno un tipo incompatible a la variable " << name <<  endl;
+         Symbol expType = init->semant(symtab);
+         if(strcmp(expType->get_string(),No_type->get_string()) != 0 && strcmp(expType->get_string(),type_decl->get_string()) != 0){
+            cout << "Error: Tipos incompatibles. Se intento asignar el tipo " << expType << " a la variable " << name << " que es de tipo " << type_decl << ". "<<  endl;
+         }else{
+            cout << "Se declaro correctamente " << name << " de tipo: " << type_decl << endl;
          }
       }else{
-         cout << "La variable " << name << " ya esta definida localmente." << endl;
+         cout << "Error: La variable " << name << " ya esta definida localmente." << endl;
       }
+
+      return type_decl;
+   }
+
+   Symbol formal_class::getName(){
+      return name;
+   }
+
+   Symbol formal_class::getType(){
+      return type_decl;
+   }
+
+
+   Symbol formal_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+
+      cout << "Se declaro correctamente " << name << " de tipo: " << type_decl << endl;
+      symtab->addid(name,&type_decl);         
 
       return type_decl;
    }
@@ -320,15 +351,20 @@ ostream& ClassTable::semant_error()
 
    Symbol assign_class::semant(SymbolTable<Symbol,Symbol>* symtab){
       type = expr->semant(symtab);
-      if(type != No_type){
+      if(strcmp(type->get_string(),No_type->get_string()) != 0){
+         
          if(symtab->lookup(name) != NULL){
             Symbol declaredType = *(symtab->lookup(name));
-            if(declaredType != type){
-               cout << "Error, en la asignacion de" << name << ". Tipos incompatibles." << endl;
+            //cout << "assign:" << name << " type es " << declaredType;
+            //cout << " se quiere asignar" << type << endl;
+            if(strcmp(declaredType->get_string(),type->get_string()) != 0){
+               cout << "Error: Tipos incompatibles. Se intento asignar el tipo " << type << " a la variable " << name << " que es de tipo " << declaredType << ". "<<  endl;
                type = No_type;
+            }else{
+               cout << "Se asigno correctamente el tipo " << type << " a la variable " << name << "." << endl;
             }
          }else{
-            cout << "Error, la variable " << name << " no se encuentra declarada en este scope.";
+            cout << "Error. La variable " << name << " no se encuentra declarada en este scope." << endl;
          }
       }
       return type;
@@ -337,6 +373,8 @@ ostream& ClassTable::semant_error()
 
 
    Symbol cond_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+
+      
       symtab->enterscope();
       Symbol predType = pred->semant(symtab);
       symtab->exitscope();
@@ -349,17 +387,13 @@ ostream& ClassTable::semant_error()
       Symbol else_expType = else_exp->semant(symtab);
       symtab->exitscope();
 
-      if(predType != No_type && then_expType != No_type && else_expType != No_type){
-         type == No_type;
+      if(strcmp(predType->get_string(),Bool->get_string()) != 0){
+            cout << "Error. Se espera tipo Bool en la condicion del if." << endl;
       }else{
-         type = OK_TYPE;
-         if(predType != Bool){
-            cout << "Error, condicion del if no booleana" << endl;
-            type = No_type;
-         }
-
+            cout << "Condicion del if correcta, tipo Bool." << endl;
       }
 
+      type = Bool;
       return type;
    }
 
@@ -390,11 +424,10 @@ ostream& ClassTable::semant_error()
 
    Symbol block_class::semant(SymbolTable<Symbol,Symbol>* symtab){
       symtab->enterscope();
-      type = OK_TYPE;
       for(int i = body->first(); body->more(i); i = body->next(i)){
         Expression expression = body->nth(i);
-        if(expression->semant(symtab) == No_type)
-           type = No_type;
+        type = expression->semant(symtab);
+        cout << type << endl;
       }
       symtab->exitscope();
       return type;
@@ -523,7 +556,7 @@ ostream& ClassTable::semant_error()
    }
  
    Symbol object_class::semant(SymbolTable<Symbol,Symbol>* symtab){
-      type = Object;
+      type = *(symtab->lookup(name));
       return type;
    }
 
@@ -561,6 +594,7 @@ void program_class::semant()
 
     for(int i = classes->first(); classes->more(i); i = classes->next(i)){
         Class_ class_ = classes->nth(i);
+        cout << class_->getName() << endl;
 	if(symtab->probe(class_->getName()) == NULL){
            symtab->addid(class_->getName(),&Object);
            class_->semant(symtab);
@@ -569,7 +603,7 @@ void program_class::semant()
            }
         }else{
            //Error clase repetida
-           cout << "Error, la clase " << class_->getName() << " ya fue declarada en este scope." << endl;
+           cout << "Error. La clase " << class_->getName() << " ya fue declarada en este scope." << endl;
         }
     }
 

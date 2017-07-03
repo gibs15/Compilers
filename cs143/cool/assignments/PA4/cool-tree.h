@@ -89,6 +89,11 @@ public:
    tree_node *copy()		 { return copy_Formal(); }
    virtual Formal copy_Formal() = 0;
 
+   //Metodos agregados
+   virtual Symbol getName() = 0;
+   virtual Symbol getType() = 0;
+   virtual Symbol semant(SymbolTable<Symbol,Symbol>*) = 0;
+
 #ifdef Formal_EXTRAS
    Formal_EXTRAS
 #endif
@@ -293,6 +298,11 @@ public:
    }
    Formal copy_Formal();
    void dump(ostream& stream, int n);
+
+   //Metodos agregados
+   Symbol getName();
+   Symbol getType();
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Formal_SHARED_EXTRAS
    Formal_SHARED_EXTRAS

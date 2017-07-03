@@ -1,11 +1,8 @@
 class C {
-	a : Int;
 	b : Bool;
-	init(x : Int, y : Bool) : C {
+	init(y : Bool) : Bool {
            {
-		a <- x;
 		b <- y;
-		self;
            }
 	};
 };

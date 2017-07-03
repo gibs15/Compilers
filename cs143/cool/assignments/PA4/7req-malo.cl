@@ -1,17 +1,9 @@
 class C {
 	a : Int;
-	b : Bool;
-	init(x : Int, y : Bool) : C {
-        {
-		   if(y=true)
-		   then    { dd : Bool }
-		   else     a <- x
-		   fi;   
-		   
-		   self;
-		   
-		   dd <- y;
-        }
+	init(x : Int) : Int {
+           {
+		c <- x;
+           }
 	};
 };
 

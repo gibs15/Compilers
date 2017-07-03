@@ -2,12 +2,9 @@
 class C {
 	a : Int;
 	b : Int;
-	init(x : Int, y : Int) : C {
+	init(x : Int, y : Int) : Int {
            {
-		if y = x
-        then a <- x
-        else b <- y
-        fi;
+		a <- x;
            }
 	};
 };
