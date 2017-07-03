@@ -305,9 +305,13 @@ ostream& ClassTable::semant_error()
    Symbol attr_class::semant(SymbolTable<Symbol,Symbol>* symtab){
       if(symtab->probe(getName()) == NULL){
          symtab->addid(name,&type_decl);
-         init->semant(symtab);
+         if(init->semant(symtab) != type_decl){
+            cout << "Se asigno un tipo incompatible a la variable " << name <<  endl;
+         }else{
+            cout << "TIPOS COMPATIBLES!!!" << endl;
+         }
       }else{
-         cout << "La variable " << getName() << " ya esta definida localmente.";
+         cout << "La variable " << name << " ya esta definida localmente.";
       }
 
       return type_decl;
