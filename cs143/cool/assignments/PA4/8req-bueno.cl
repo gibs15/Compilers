@@ -1,30 +1,12 @@
 class C {
 	a : Int;
-	b : Bool;
-	init(x : Int, y : Bool) : C {
-        {
-		   if(y=true)
-		   then     a <- x
-		   else     b <- y
-		   fi; 
-		   self;
-		   
-        }
+        c : Int;
+	init(x : Int) : Int {
+           {
+		c <- x;
+           }
 	};
 };
-
-class S {
-	a : Int;
-	b : Bool;
-	init(x : Int, y : Bool) : S {
-        {
-          a <- x;
-          b <- y;
-		  
-        }
-	};
-};
-
 
 Class Main {
 	main():C {
