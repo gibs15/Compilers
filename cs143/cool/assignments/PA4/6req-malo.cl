@@ -2,11 +2,14 @@ class C {
 	a : Int;
 	b : Bool;
 	init(x : Int, y : Bool) : C {
-           {
-		a <- x;
-		b <- y;
-		self;
-           }
+        {
+		   if(y=true)
+		    then    a <- x
+		    else    b <- 130
+		    fi;  
+			self;
+		   
+        }
 	};
 };
 

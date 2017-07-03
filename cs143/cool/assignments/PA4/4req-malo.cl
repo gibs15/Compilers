@@ -4,13 +4,13 @@ class C {
 	init(x : Int, y : Bool) : C {
            {
 		a <- x;
-		b <- y;
+		b <- 150;
 		self;
            }
 	};
 };
 
-Class BadC {
+Class Main {
 	main():C {
 	  (new C).init(1,true)
 	};
