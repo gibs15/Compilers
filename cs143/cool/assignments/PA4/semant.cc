@@ -7,12 +7,6 @@
 #include "utilities.h"
 
 
-#define ERROR_TYPE	-1
-#define OK_TYPE		0
-#define INT_TYPE 	1
-#define BOOL_TYPE 	2
-#define STRING_TYPE 	3
-#define CLASS_TYPE	4
 
 #define METHOD_TYPE	5
 #define ATTR_TYPE	6
@@ -233,6 +227,288 @@ ostream& ClassTable::semant_error()
     return error_stream;
 } 
 
+//
+//
+// Implementaciones de cool-tree.h
+
+   Symbol class__class::getName(){
+      return name;
+   }
+
+   Symbol class__class::getParent(){
+      return parent;
+   }
+
+   Features class__class::getFeatures(){
+      return features;
+   }
+
+   Symbol class__class::getFilename(){
+      return filename;
+   }
+
+   void class__class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      symtab->enterscope();
+      bool hasMain = false;
+      cout << getName() << endl;
+      for(int i = features->first(); features->more(i); i = features->next(i)){
+        Feature feature = features->nth(i);
+      	if(name->equal_string("Main",4) != 0 && feature->getFeatureType() == METHOD_TYPE && feature->getName()->equal_string("main",4) != 0){
+           hasMain = true;
+      	}
+        feature->semant(symtab);
+      }
+
+      if(!hasMain && getName()->equal_string("Main",4) != 0){
+	  cout << "No hay metodo Main" << endl;
+      }
+
+      symtab->exitscope();
+         
+   }
+
+
+
+   Symbol method_class::getName(){
+      return name;
+   }
+
+   Symbol method_class::getTypeDecl(){
+      return return_type;
+   }
+
+   int method_class::getFeatureType(){
+     return featureType;
+   }
+   //EDITAR
+   Symbol method_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      symtab->enterscope();
+      expr->semant(symtab);
+      symtab->exitscope();
+      return return_type;
+   }
+
+
+
+   Symbol attr_class::getName(){
+      return name;
+   }
+
+   Symbol attr_class::getTypeDecl(){
+      return type_decl;
+   }
+
+   int attr_class::getFeatureType(){
+     return featureType;
+   }
+   
+   Symbol attr_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      if(symtab->probe(getName()) == NULL){
+         symtab->addid(name,&type_decl);
+         init->semant(symtab);
+      }else{
+         cout << "La variable " << getName() << " ya esta definida localmente.";
+      }
+
+      return type_decl;
+   }
+
+
+   Symbol assign_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      type = expr->semant(symtab);
+      if(type != No_type){
+         if(symtab->lookup(name) != NULL){
+            Symbol declaredType = *(symtab->lookup(name));
+            if(declaredType != type){
+               cout << "Error, en la asignacion de" << name << ". Tipos incompatibles." << endl;
+               type = No_type;
+            }
+         }else{
+            cout << "Error, la variable " << name << " no se encuentra declarada en este scope.";
+         }
+      }
+      return type;
+   }
+
+
+
+   Symbol cond_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      symtab->enterscope();
+      Symbol predType = pred->semant(symtab);
+      symtab->exitscope();
+
+      symtab->enterscope();
+      Symbol then_expType = then_exp->semant(symtab);
+      symtab->exitscope();      
+
+      symtab->enterscope();
+      Symbol else_expType = else_exp->semant(symtab);
+      symtab->exitscope();
+
+      if(predType != No_type && then_expType != No_type && else_expType != No_type){
+         type == No_type;
+      }else{
+         type = OK_TYPE;
+         if(predType != Bool){
+            cout << "Error, condicion del if no booleana" << endl;
+            type = No_type;
+         }
+
+      }
+
+      return type;
+   }
+
+
+   Symbol loop_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      symtab->enterscope();
+      Symbol predType = pred->semant(symtab);
+      symtab->exitscope();      
+  
+      symtab->enterscope();
+      Symbol bodyType = body->semant(symtab);
+      symtab->exitscope();
+
+      if(predType != No_type && bodyType != No_type){
+         type == No_type;
+      }else{
+         type = OK_TYPE;
+         if(predType != Bool){
+            cout << "Error, condicion del loop no booleana" << endl;
+            type = No_type;
+         }
+
+      }
+
+      return type;
+   }
+
+
+   Symbol block_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      symtab->enterscope();
+      type = OK_TYPE;
+      for(int i = body->first(); body->more(i); i = body->next(i)){
+        Expression expression = body->nth(i);
+        if(expression->semant(symtab) == No_type)
+           type = No_type;
+      }
+      symtab->exitscope();
+      return type;
+   }
+
+
+   Symbol plus_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      if(e1->semant(symtab) != No_type || e2->semant(symtab) != No_type){
+         Symbol t = Int;
+         if(e1->semant(symtab) != Int || e2->semant(symtab) != Int){
+            type = No_type;
+         }
+      }else{
+         type = No_type;
+      }
+      return type;
+   }
+
+
+   Symbol sub_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      if(e1->semant(symtab) != No_type || e2->semant(symtab) != No_type){
+         Symbol t = Int;
+         if(e1->semant(symtab) != Int || e2->semant(symtab) != Int){
+            type = No_type;
+         }
+      }else{
+         type = No_type;
+      }
+      return type;
+   }
+
+   Symbol mul_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      if(e1->semant(symtab) != No_type || e2->semant(symtab) != No_type){
+         Symbol t = Int;
+         if(e1->semant(symtab) != Int || e2->semant(symtab) != Int){
+            type = No_type;
+         }
+      }else{
+         type = No_type;
+      }
+      return type;
+   }
+
+   Symbol divide_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      if(e1->semant(symtab) != No_type || e2->semant(symtab) != No_type){
+         Symbol t = Int;
+         if(e1->semant(symtab) != Int || e2->semant(symtab) != Int){
+            type = No_type;
+         }
+      }else{
+         type = No_type;
+      }
+      return type;
+   }
+
+   Symbol neg_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      type = Int;
+      return type;
+   }
+
+   Symbol lt_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      if(e1->semant(symtab) != No_type || e2->semant(symtab) != No_type){
+         Symbol t = Bool;
+         if(e1->semant(symtab) != Int || e2->semant(symtab) != Int){
+            type = No_type;
+         }
+      }else{
+         type = No_type;
+      }
+      return type;
+   }
+
+   Symbol eq_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      if(e1->semant(symtab) == No_type || e2->semant(symtab) != No_type){
+         Symbol t = e1->semant(symtab);
+         if(t != e2->semant(symtab)){
+            type = No_type;
+         }
+      }else{
+         type = No_type;
+      }
+      return type;
+   }
+
+   Symbol leq_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      if(e1->semant(symtab) != No_type || e2->semant(symtab) != No_type){
+         Symbol t = Bool;
+         if(e1->semant(symtab) != Int || e2->semant(symtab) != Int){
+            type = No_type;
+         }
+      }else{
+         type = No_type;
+      }
+      return type;
+   }
+
+   Symbol comp_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      type = Bool;
+      return type;
+   }
+
+   Symbol int_const_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      type = Int;
+      return type;
+   }
+
+   Symbol bool_const_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      type = Bool;
+      return type;
+   }
+
+   Symbol string_const_class::semant(SymbolTable<Symbol,Symbol>* symtab){
+      type = Str;
+      symtab->addid(token,&type);
+      return type;
+   }
+
+ 
 
 
 /*   This is the entry point to the semantic checker.
@@ -259,12 +535,8 @@ void program_class::semant()
     /* some semantic analysis code may go here */
 
 
-
-
-
-
     
-    SymbolTable<Symbol,int> *symtab = new SymbolTable<Symbol, int>();
+    SymbolTable<Symbol,Symbol> *symtab = new SymbolTable<Symbol, Symbol>();
 
     symtab->enterscope();
 
@@ -273,7 +545,7 @@ void program_class::semant()
     for(int i = classes->first(); classes->more(i); i = classes->next(i)){
         Class_ class_ = classes->nth(i);
 	if(symtab->probe(class_->getName()) == NULL){
-           symtab->addid(class_->getName(),new int(CLASS_TYPE));
+           symtab->addid(class_->getName(),&Object);
            class_->semant(symtab);
 	   if(class_->getName()->equal_string("Main",4) != 0){
               hasMain = true; 

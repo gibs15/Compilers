@@ -52,7 +52,7 @@ public:
    virtual Symbol getParent() = 0;
    virtual Features getFeatures() = 0;
    virtual Symbol getFilename() = 0;
-   virtual void semant(SymbolTable<Symbol,int>*) = 0;
+   virtual void semant(SymbolTable<Symbol,Symbol>*) = 0;
  
 
 #ifdef Class__EXTRAS
@@ -73,7 +73,7 @@ public:
    virtual Symbol getName() = 0;
    virtual Symbol getTypeDecl() = 0;
    virtual int getFeatureType() = 0;
-   virtual void semant(SymbolTable<Symbol,int>*) = 0;
+   virtual Symbol semant(SymbolTable<Symbol,Symbol>*) = 0;
 
 #ifdef Feature_EXTRAS
    Feature_EXTRAS
@@ -102,7 +102,7 @@ class Expression_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Expression(); }
    virtual Expression copy_Expression() = 0;
-   virtual int semant(SymbolTable<Symbol,int>*) = 0;
+   virtual Symbol semant(SymbolTable<Symbol,Symbol>*) = 0;
 
 #ifdef Expression_EXTRAS
    Expression_EXTRAS
@@ -189,40 +189,15 @@ public:
    void dump(ostream& stream, int n);
 
    //Metodos agregados
-   Symbol getName(){
-      return name;
-   }
+   Symbol getName();
    
-   Symbol getParent(){
-      return parent;
-   }
+   Symbol getParent();
 
-   Features getFeatures(){
-      return features;
-   }
+   Features getFeatures();
 
-   Symbol getFilename(){
-      return filename;
-   }
-   void semant(SymbolTable<Symbol,int>* symtab){
-      symtab->enterscope();
-      bool hasMain = false;
-      cout << getName() << endl;
-      for(int i = features->first(); features->more(i); i = features->next(i)){
-        Feature feature = features->nth(i);
-      	if(name->equal_string("Main",4) != 0 && feature->getFeatureType() == METHOD_TYPE && feature->getName()->equal_string("main",4) != 0){
-           hasMain = true;
-      	}
-        feature->semant(symtab);
-      }
+   Symbol getFilename();
 
-      if(!hasMain && getName()->equal_string("Main",4) != 0){
-	  cout << "No hay metodo Main" << endl;
-      }
-
-      symtab->exitscope();
-         
-   }
+   void semant(SymbolTable<Symbol,Symbol>* symtab);
 
 
 #ifdef Class__SHARED_EXTRAS
@@ -254,23 +229,13 @@ public:
    void dump(ostream& stream, int n);
 
    //Metodos agregados
-   Symbol getName(){
-      return name;
-   }
+   Symbol getName();
 
-   Symbol getTypeDecl(){
-      return return_type;
-   }
+   Symbol getTypeDecl();
 
-   int getFeatureType(){
-     return featureType;
-   }
+   int getFeatureType();
    
-   void semant(SymbolTable<Symbol,int>* symtab){
-      symtab->enterscope();
-      expr->semant(symtab);
-      symtab->exitscope();
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
@@ -299,26 +264,13 @@ public:
    void dump(ostream& stream, int n);
 
    //Metodos agregados
-   Symbol getName(){
-      return name;
-   }
+   Symbol getName();
 
-   Symbol getTypeDecl(){
-      return type_decl;
-   }
+   Symbol getTypeDecl();
 
-   int getFeatureType(){
-     return featureType;
-   }
+   int getFeatureType();
 
-   void semant(SymbolTable<Symbol,int>* symtab){
-      if(symtab->probe(getName()) == NULL){
-         //symtab->addid();
-         init->semant(symtab);
-      }else{
-         cout << "La variable " << getName() << " ya esta definida localmente.";
-      }
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
@@ -381,7 +333,7 @@ class assign_class : public Expression_class {
 protected:
    Symbol name;
    Expression expr;
-   int type;
+   Symbol type;
 public:
    assign_class(Symbol a1, Expression a2) {
       name = a1;
@@ -391,21 +343,7 @@ public:
    void dump(ostream& stream, int n);
 
    //Metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      type = expr->semant(symtab);
-      if(type != ERROR_TYPE){
-         if(symtab->lookup(name) != NULL){
-            int declaredType = *(symtab->lookup(name));
-            if(declaredType != type){
-               cout << "Error, en la asignacion de" << name << ". Tipos incompatibles." << endl;
-               type = ERROR_TYPE;
-            }
-         }else{
-            cout << "Error, la variable " << name << " no se encuentra declarada en este scope.";
-         }
-      }
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -434,8 +372,8 @@ public:
    void dump(ostream& stream, int n);
 
    //Metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      return -10;
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab){
+      return type_name;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -463,8 +401,8 @@ public:
    void dump(ostream& stream, int n);
 
    //Metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      return -10;
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab){
+      return name;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -482,7 +420,7 @@ protected:
    Expression pred;
    Expression then_exp;
    Expression else_exp;
-   int type;
+   Symbol type;
 public:
    cond_class(Expression a1, Expression a2, Expression a3) {
       pred = a1;
@@ -494,32 +432,7 @@ public:
 
    //Metodos agregados
 
-   int semant(SymbolTable<Symbol,int>* symtab){
-      symtab->enterscope();
-      int predType = pred->semant(symtab);
-      symtab->exitscope();
-
-      symtab->enterscope();
-      int then_expType = then_exp->semant(symtab);
-      symtab->exitscope();      
-
-      symtab->enterscope();
-      int else_expType = else_exp->semant(symtab);
-      symtab->exitscope();
-
-      if(predType != ERROR_TYPE && then_expType != ERROR_TYPE && else_expType != ERROR_TYPE){
-         type == ERROR_TYPE;
-      }else{
-         type = OK_TYPE;
-         if(predType != BOOL_TYPE){
-            cout << "Error, condicion del if no booleana" << endl;
-            type = ERROR_TYPE;
-         }
-
-      }
-
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -535,7 +448,7 @@ class loop_class : public Expression_class {
 protected:
    Expression pred;
    Expression body;
-   int type;
+   Symbol type;
 public:
    loop_class(Expression a1, Expression a2) {
       pred = a1;
@@ -546,28 +459,7 @@ public:
 
   //Metodos agregados
 
-   int semant(SymbolTable<Symbol,int>* symtab){
-      symtab->enterscope();
-      int predType = pred->semant(symtab);
-      symtab->exitscope();      
-  
-      symtab->enterscope();
-      int bodyType = body->semant(symtab);
-      symtab->exitscope();
-
-      if(predType != ERROR_TYPE && bodyType != ERROR_TYPE){
-         type == ERROR_TYPE;
-      }else{
-         type = OK_TYPE;
-         if(predType != BOOL_TYPE){
-            cout << "Error, condicion del loop no booleana" << endl;
-            type = ERROR_TYPE;
-         }
-
-      }
-
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -583,6 +475,7 @@ class typcase_class : public Expression_class {
 protected:
    Expression expr;
    Cases cases;
+   Symbol temp;
 public:
    typcase_class(Expression a1, Cases a2) {
       expr = a1;
@@ -591,8 +484,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
-   int semant(SymbolTable<Symbol,int>* symtab){
-      return -10;
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab){
+      return temp;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -608,7 +501,7 @@ public:
 class block_class : public Expression_class {
 protected:
    Expressions body;
-   int type;
+   Symbol type;
 public:
    block_class(Expressions a1) {
       body = a1;
@@ -616,17 +509,7 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
-   int semant(SymbolTable<Symbol,int>* symtab){
-      symtab->enterscope();
-      type = OK_TYPE;
-      for(int i = body->first(); body->more(i); i = body->next(i)){
-        Expression expression = body->nth(i);
-        if(expression->semant(symtab) == ERROR_TYPE)
-           type = ERROR_TYPE;
-      }
-      symtab->exitscope();
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -654,8 +537,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
-   int semant(SymbolTable<Symbol,int>* symtab){
-      return -10;
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab){
+      return type_decl;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -672,7 +555,7 @@ class plus_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
-   int type;
+   Symbol type;
 public:
    plus_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -682,17 +565,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      if(e1->semant(symtab) != ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
-         int t = INT_TYPE;
-         if(e1->semant(symtab) != INT_TYPE || e2->semant(symtab) != INT_TYPE){
-            type = ERROR_TYPE;
-         }
-      }else{
-         type = ERROR_TYPE;
-      }
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -708,7 +581,7 @@ class sub_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
-   int type;
+   Symbol type;
 public:
    sub_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -718,17 +591,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      if(e1->semant(symtab) != ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
-         int t = INT_TYPE;
-         if(e1->semant(symtab) != INT_TYPE || e2->semant(symtab) != INT_TYPE){
-            type = ERROR_TYPE;
-         }
-      }else{
-         type = ERROR_TYPE;
-      }
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -744,7 +607,7 @@ class mul_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
-   int type;
+   Symbol type;
 public:
    mul_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -754,17 +617,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      if(e1->semant(symtab) != ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
-         int t = INT_TYPE;
-         if(e1->semant(symtab) != INT_TYPE || e2->semant(symtab) != INT_TYPE){
-            type = ERROR_TYPE;
-         }
-      }else{
-         type = ERROR_TYPE;
-      }
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -780,7 +633,7 @@ class divide_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
-   int type;
+   Symbol type;
 public:
    divide_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -790,17 +643,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      if(e1->semant(symtab) != ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
-         int t = INT_TYPE;
-         if(e1->semant(symtab) != INT_TYPE || e2->semant(symtab) != INT_TYPE){
-            type = ERROR_TYPE;
-         }
-      }else{
-         type = ERROR_TYPE;
-      }
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -815,7 +658,7 @@ public:
 class neg_class : public Expression_class {
 protected:
    Expression e1;
-   int type;
+   Symbol type;
 public:
    neg_class(Expression a1) {
       e1 = a1;
@@ -824,10 +667,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      type = INT_TYPE;
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -843,7 +683,7 @@ class lt_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
-   int type;
+   Symbol type;
 public:
    lt_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -853,17 +693,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      if(e1->semant(symtab) != ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
-         int t = BOOL_TYPE;
-         if(e1->semant(symtab) != INT_TYPE || e2->semant(symtab) != INT_TYPE){
-            type = ERROR_TYPE;
-         }
-      }else{
-         type = ERROR_TYPE;
-      }
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -879,7 +709,7 @@ class eq_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
-   int type;
+   Symbol type;
 public:
    eq_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -889,17 +719,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      if(e1->semant(symtab) == ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
-         int t = e1->semant(symtab);
-         if(t != e2->semant(symtab)){
-            type = ERROR_TYPE;
-         }
-      }else{
-         type = ERROR_TYPE;
-      }
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -915,7 +735,7 @@ class leq_class : public Expression_class {
 protected:
    Expression e1;
    Expression e2;
-   int type;
+   Symbol type;
 public:
    leq_class(Expression a1, Expression a2) {
       e1 = a1;
@@ -925,17 +745,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      if(e1->semant(symtab) != ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
-         int t = BOOL_TYPE;
-         if(e1->semant(symtab) != INT_TYPE || e2->semant(symtab) != INT_TYPE){
-            type = ERROR_TYPE;
-         }
-      }else{
-         type = ERROR_TYPE;
-      }
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -950,7 +760,7 @@ public:
 class comp_class : public Expression_class {
 protected:
    Expression e1;
-   int type;
+   Symbol type;
 public:
    comp_class(Expression a1) {
       e1 = a1;
@@ -959,10 +769,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      type = BOOL_TYPE;
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -977,7 +784,7 @@ public:
 class int_const_class : public Expression_class {
 protected:
    Symbol token;
-   int type;
+   Symbol type;
 public:
    int_const_class(Symbol a1) {
       token = a1;
@@ -987,10 +794,7 @@ public:
 
 //metodos agregados
 
-   int semant(SymbolTable<Symbol,int>* symtab){\
-      type = INT_TYPE;
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -1005,7 +809,7 @@ public:
 class bool_const_class : public Expression_class {
 protected:
    Boolean val;
-   int type;
+   Symbol type;
 public:
    bool_const_class(Boolean a1) {
       val = a1;
@@ -1014,10 +818,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      type = BOOL_TYPE;
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -1032,7 +833,7 @@ public:
 class string_const_class : public Expression_class {
 protected:
    Symbol token;
-   int type;
+   Symbol type;
 public:
    string_const_class(Symbol a1) {
       token = a1;
@@ -1041,11 +842,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      type = STRING_TYPE;
-      symtab->addid(token,new int(type));
-      return type;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -1068,8 +865,8 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      return -10;
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab){
+      return type_name;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -1085,6 +882,7 @@ public:
 class isvoid_class : public Expression_class {
 protected:
    Expression e1;
+   Symbol temp;
 public:
    isvoid_class(Expression a1) {
       e1 = a1;
@@ -1093,8 +891,8 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      return -10;
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab){
+      return temp;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -1109,6 +907,8 @@ public:
 // define constructor - no_expr
 class no_expr_class : public Expression_class {
 protected:
+
+   Symbol temp;
 public:
    no_expr_class() {
    }
@@ -1116,8 +916,8 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      return -10;
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab){
+      return temp;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -1141,8 +941,8 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(SymbolTable<Symbol,int>* symtab){
-      return -10;
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab){
+      return name;
    }
 
 #ifdef Expression_SHARED_EXTRAS
