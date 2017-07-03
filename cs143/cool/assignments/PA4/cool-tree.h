@@ -882,7 +882,7 @@ public:
 class isvoid_class : public Expression_class {
 protected:
    Expression e1;
-   Symbol temp;
+   Symbol type;
 public:
    isvoid_class(Expression a1) {
       e1 = a1;
@@ -891,9 +891,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   Symbol semant(SymbolTable<Symbol,Symbol>* symtab){
-      return temp;
-   }
+   Symbol semant(SymbolTable<Symbol,Symbol>* symtab);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
