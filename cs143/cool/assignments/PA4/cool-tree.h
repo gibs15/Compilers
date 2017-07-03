@@ -11,16 +11,17 @@
 
 #include "tree.h"
 #include "cool-tree.handcode.h"
+#include <symtab.h>
 
 #define ERROR_TYPE	-1
 #define OK_TYPE		0
 #define INT_TYPE 	1
 #define BOOL_TYPE 	2
 #define STRING_TYPE 	3
+#define CLASS_TYPE	4
 
-#define METHOD_TYPE	4
-#define ATTR_TYPE	5
-
+#define METHOD_TYPE	5
+#define ATTR_TYPE	6
 
 
 // define the class for phylum
@@ -51,7 +52,7 @@ public:
    virtual Symbol getParent() = 0;
    virtual Features getFeatures() = 0;
    virtual Symbol getFilename() = 0;
-   virtual void semant() = 0;
+   virtual void semant(SymbolTable<Symbol,int>*) = 0;
  
 
 #ifdef Class__EXTRAS
@@ -70,8 +71,9 @@ public:
 
    //Metodos agregados
    virtual Symbol getName() = 0;
+   virtual Symbol getTypeDecl() = 0;
    virtual int getFeatureType() = 0;
-   virtual void semant() = 0;
+   virtual void semant(SymbolTable<Symbol,int>*) = 0;
 
 #ifdef Feature_EXTRAS
    Feature_EXTRAS
@@ -100,7 +102,7 @@ class Expression_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Expression(); }
    virtual Expression copy_Expression() = 0;
-   virtual int semant() = 0;
+   virtual int semant(SymbolTable<Symbol,int>*) = 0;
 
 #ifdef Expression_EXTRAS
    Expression_EXTRAS
@@ -202,7 +204,8 @@ public:
    Symbol getFilename(){
       return filename;
    }
-   void semant(){
+   void semant(SymbolTable<Symbol,int>* symtab){
+      symtab->enterscope();
       bool hasMain = false;
       cout << getName() << endl;
       for(int i = features->first(); features->more(i); i = features->next(i)){
@@ -210,12 +213,14 @@ public:
       	if(name->equal_string("Main",4) != 0 && feature->getFeatureType() == METHOD_TYPE && feature->getName()->equal_string("main",4) != 0){
            hasMain = true;
       	}
-        features->nth(i)->semant();
+        feature->semant(symtab);
       }
 
       if(!hasMain && getName()->equal_string("Main",4) != 0){
 	  cout << "No hay metodo Main" << endl;
       }
+
+      symtab->exitscope();
          
    }
 
@@ -253,12 +258,18 @@ public:
       return name;
    }
 
+   Symbol getTypeDecl(){
+      return return_type;
+   }
+
    int getFeatureType(){
      return featureType;
    }
    
-   void semant(){
-      cout << "Method:" << getName() << endl;
+   void semant(SymbolTable<Symbol,int>* symtab){
+      symtab->enterscope();
+      expr->semant(symtab);
+      symtab->exitscope();
    }
 
 #ifdef Feature_SHARED_EXTRAS
@@ -292,12 +303,21 @@ public:
       return name;
    }
 
+   Symbol getTypeDecl(){
+      return type_decl;
+   }
+
    int getFeatureType(){
      return featureType;
    }
 
-   void semant(){
-      cout << "Attribute:" << getName() << endl;
+   void semant(SymbolTable<Symbol,int>* symtab){
+      if(symtab->probe(getName()) == NULL){
+         //symtab->addid();
+         init->semant(symtab);
+      }else{
+         cout << "La variable " << getName() << " ya esta definida localmente.";
+      }
    }
 
 #ifdef Feature_SHARED_EXTRAS
@@ -361,6 +381,7 @@ class assign_class : public Expression_class {
 protected:
    Symbol name;
    Expression expr;
+   int type;
 public:
    assign_class(Symbol a1, Expression a2) {
       name = a1;
@@ -370,8 +391,20 @@ public:
    void dump(ostream& stream, int n);
 
    //Metodos agregados
-   int semant(){
-      return -10;
+   int semant(SymbolTable<Symbol,int>* symtab){
+      type = expr->semant(symtab);
+      if(type != ERROR_TYPE){
+         if(symtab->lookup(name) != NULL){
+            int declaredType = *(symtab->lookup(name));
+            if(declaredType != type){
+               cout << "Error, en la asignacion de" << name << ". Tipos incompatibles." << endl;
+               type = ERROR_TYPE;
+            }
+         }else{
+            cout << "Error, la variable " << name << " no se encuentra declarada en este scope.";
+         }
+      }
+      return type;
    }
 
 #ifdef Expression_SHARED_EXTRAS
@@ -401,7 +434,7 @@ public:
    void dump(ostream& stream, int n);
 
    //Metodos agregados
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
       return -10;
    }
 
@@ -430,7 +463,7 @@ public:
    void dump(ostream& stream, int n);
 
    //Metodos agregados
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
       return -10;
    }
 
@@ -461,11 +494,18 @@ public:
 
    //Metodos agregados
 
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
+      symtab->enterscope();
+      int predType = pred->semant(symtab);
+      symtab->exitscope();
 
-      int predType = pred->semant();
-      int then_expType = then_exp->semant();
-      int else_expType = else_exp->semant();
+      symtab->enterscope();
+      int then_expType = then_exp->semant(symtab);
+      symtab->exitscope();      
+
+      symtab->enterscope();
+      int else_expType = else_exp->semant(symtab);
+      symtab->exitscope();
 
       if(predType != ERROR_TYPE && then_expType != ERROR_TYPE && else_expType != ERROR_TYPE){
          type == ERROR_TYPE;
@@ -506,10 +546,14 @@ public:
 
   //Metodos agregados
 
-   int semant(){
-
-      int predType = pred->semant();
-      int bodyType = body->semant();
+   int semant(SymbolTable<Symbol,int>* symtab){
+      symtab->enterscope();
+      int predType = pred->semant(symtab);
+      symtab->exitscope();      
+  
+      symtab->enterscope();
+      int bodyType = body->semant(symtab);
+      symtab->exitscope();
 
       if(predType != ERROR_TYPE && bodyType != ERROR_TYPE){
          type == ERROR_TYPE;
@@ -547,7 +591,7 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
       return -10;
    }
 
@@ -572,13 +616,15 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
+      symtab->enterscope();
       type = OK_TYPE;
       for(int i = body->first(); body->more(i); i = body->next(i)){
         Expression expression = body->nth(i);
-        if(expression->semant() == ERROR_TYPE)
+        if(expression->semant(symtab) == ERROR_TYPE)
            type = ERROR_TYPE;
       }
+      symtab->exitscope();
       return type;
    }
 
@@ -608,7 +654,7 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
       return -10;
    }
 
@@ -636,10 +682,10 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
-      if(e1->semant() != ERROR_TYPE || e2->semant() != ERROR_TYPE){
+   int semant(SymbolTable<Symbol,int>* symtab){
+      if(e1->semant(symtab) != ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
          int t = INT_TYPE;
-         if(e1->semant() != INT_TYPE || e2->semant() != INT_TYPE){
+         if(e1->semant(symtab) != INT_TYPE || e2->semant(symtab) != INT_TYPE){
             type = ERROR_TYPE;
          }
       }else{
@@ -672,10 +718,10 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
-      if(e1->semant() != ERROR_TYPE || e2->semant() != ERROR_TYPE){
+   int semant(SymbolTable<Symbol,int>* symtab){
+      if(e1->semant(symtab) != ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
          int t = INT_TYPE;
-         if(e1->semant() != INT_TYPE || e2->semant() != INT_TYPE){
+         if(e1->semant(symtab) != INT_TYPE || e2->semant(symtab) != INT_TYPE){
             type = ERROR_TYPE;
          }
       }else{
@@ -708,10 +754,10 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
-      if(e1->semant() != ERROR_TYPE || e2->semant() != ERROR_TYPE){
+   int semant(SymbolTable<Symbol,int>* symtab){
+      if(e1->semant(symtab) != ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
          int t = INT_TYPE;
-         if(e1->semant() != INT_TYPE || e2->semant() != INT_TYPE){
+         if(e1->semant(symtab) != INT_TYPE || e2->semant(symtab) != INT_TYPE){
             type = ERROR_TYPE;
          }
       }else{
@@ -744,10 +790,10 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
-      if(e1->semant() != ERROR_TYPE || e2->semant() != ERROR_TYPE){
+   int semant(SymbolTable<Symbol,int>* symtab){
+      if(e1->semant(symtab) != ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
          int t = INT_TYPE;
-         if(e1->semant() != INT_TYPE || e2->semant() != INT_TYPE){
+         if(e1->semant(symtab) != INT_TYPE || e2->semant(symtab) != INT_TYPE){
             type = ERROR_TYPE;
          }
       }else{
@@ -778,7 +824,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
       type = INT_TYPE;
       return type;
    }
@@ -807,10 +853,10 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
-      if(e1->semant() != ERROR_TYPE || e2->semant() != ERROR_TYPE){
+   int semant(SymbolTable<Symbol,int>* symtab){
+      if(e1->semant(symtab) != ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
          int t = BOOL_TYPE;
-         if(e1->semant() != INT_TYPE || e2->semant() != INT_TYPE){
+         if(e1->semant(symtab) != INT_TYPE || e2->semant(symtab) != INT_TYPE){
             type = ERROR_TYPE;
          }
       }else{
@@ -843,10 +889,10 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
-      if(e1->semant() == ERROR_TYPE || e2->semant() != ERROR_TYPE){
-         int t = e1->semant();
-         if(t != e2->semant()){
+   int semant(SymbolTable<Symbol,int>* symtab){
+      if(e1->semant(symtab) == ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
+         int t = e1->semant(symtab);
+         if(t != e2->semant(symtab)){
             type = ERROR_TYPE;
          }
       }else{
@@ -879,10 +925,10 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
-      if(e1->semant() != ERROR_TYPE || e2->semant() != ERROR_TYPE){
+   int semant(SymbolTable<Symbol,int>* symtab){
+      if(e1->semant(symtab) != ERROR_TYPE || e2->semant(symtab) != ERROR_TYPE){
          int t = BOOL_TYPE;
-         if(e1->semant() != INT_TYPE || e2->semant() != INT_TYPE){
+         if(e1->semant(symtab) != INT_TYPE || e2->semant(symtab) != INT_TYPE){
             type = ERROR_TYPE;
          }
       }else{
@@ -913,7 +959,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
       type = BOOL_TYPE;
       return type;
    }
@@ -940,7 +986,8 @@ public:
    void dump(ostream& stream, int n);
 
 //metodos agregados
-   int semant(){
+
+   int semant(SymbolTable<Symbol,int>* symtab){\
       type = INT_TYPE;
       return type;
    }
@@ -967,7 +1014,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
       type = BOOL_TYPE;
       return type;
    }
@@ -994,8 +1041,9 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
       type = STRING_TYPE;
+      symtab->addid(token,new int(type));
       return type;
    }
 
@@ -1020,7 +1068,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
       return -10;
    }
 
@@ -1045,7 +1093,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
       return -10;
    }
 
@@ -1068,7 +1116,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
       return -10;
    }
 
@@ -1093,7 +1141,7 @@ public:
    void dump(ostream& stream, int n);
 
    //metodos agregados
-   int semant(){
+   int semant(SymbolTable<Symbol,int>* symtab){
       return -10;
    }
 

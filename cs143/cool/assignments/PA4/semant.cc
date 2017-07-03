@@ -7,6 +7,17 @@
 #include "utilities.h"
 
 
+#define ERROR_TYPE	-1
+#define OK_TYPE		0
+#define INT_TYPE 	1
+#define BOOL_TYPE 	2
+#define STRING_TYPE 	3
+#define CLASS_TYPE	4
+
+#define METHOD_TYPE	5
+#define ATTR_TYPE	6
+
+
 extern int semant_debug;
 extern char *curr_filename;
 
@@ -248,28 +259,43 @@ void program_class::semant()
     /* some semantic analysis code may go here */
 
 
-    cout << "SHITTTTTTTT" << endl;
+
+
+
+
+    
+    SymbolTable<Symbol,int> *symtab = new SymbolTable<Symbol, int>();
+
+    symtab->enterscope();
 
     bool hasMain = false;
 
     for(int i = classes->first(); classes->more(i); i = classes->next(i)){
         Class_ class_ = classes->nth(i);
-        class_->semant();
-	if(class_->getName()->equal_string("Main",4) != 0){
-           hasMain = true; 
+	if(symtab->probe(class_->getName()) == NULL){
+           symtab->addid(class_->getName(),new int(CLASS_TYPE));
+           class_->semant(symtab);
+	   if(class_->getName()->equal_string("Main",4) != 0){
+              hasMain = true; 
+           }
+        }else{
+           //Error clase repetida
+           cout << "Error, la clase " << class_->getName() << " ya fue declarada en este scope." << endl;
         }
-    } 
- 
+    }
+
     if(hasMain == false){
 	cout << "No hay clase Main" << endl;
     }
 
-
+    symtab->exitscope();
 
     if (classtable->errors()) {
 	cerr << "Compilation halted due to static semantic errors." << endl;
 	exit(1);
     }
+
+    
 
     //Separacion para el arbol
     printf("\n\n\n\n\n\n\n");
